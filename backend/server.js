@@ -1,21 +1,21 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors'); 
+const mysql = require('mysql');
+require('dotenv').config();
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000
 
 app.use(cors()); 
 app.use(bodyParser.json());
 
 // Configure Database
-const mysql = require('mysql');
-
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root', 
-  password: '', 
-  database: 'assignment4'
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE
 });
 
 // Connect to Database
