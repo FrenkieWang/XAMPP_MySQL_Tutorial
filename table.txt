@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     userId INT NOT NULL AUTO_INCREMENT,
     title VARCHAR(50),
+    titleOther VARCHAR(50),
     firstName VARCHAR(100) NOT NULL,
     surName VARCHAR(100) NOT NULL,
     mobile VARCHAR(100) NOT NULL,

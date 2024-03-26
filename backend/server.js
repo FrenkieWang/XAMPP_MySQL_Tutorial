@@ -1,21 +1,13 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors'); 
+const http = require('http');
 const mysql = require('mysql');
-require('dotenv').config();
-
-const app = express();
-const port = process.env.PORT || 5000
-
-app.use(cors()); 
-app.use(bodyParser.json());
+const url = require('url');
 
 // Configure Database
 const db = mysql.createConnection({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'assignment4'
 });
 
 // Connect to Database
@@ -24,160 +16,138 @@ db.connect((err) => {
   console.log('Connected to the database');
 });
 
+const server = http.createServer((req, res) => {
+  const reqUrl = url.parse(req.url, true);
+  const path = reqUrl.pathname;
+  const segments = path.split('/').filter(Boolean); // Split path and remove empty segments
+  let SQL = ''; // Initialize  SQL as null
 
-/* Users **************************************************************************** */
-// GET - Get all Users
-app.get('/users/get', (req, res) => {
-  db.query('SELECT * FROM users', (err, results) => {
-    if (err) throw err;
-    res.json(results);
-  });
-});
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); 
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-// POST - Create a User
-app.post('/users/create', (req, res) => {
-  const { title, titleOther, firstName, surName, mobile, email } = req.body;
-
-  const validTitles = ['Mx', 'Ms', 'Mr', 'Mrs', 'Miss', 'Dr', 'Other'];
-  if (!validTitles.includes(title)) {
-    return res.status(400).send('Invalid title. Must be one of Mx, Ms, Mr, Mrs, Miss, Dr, Other.');
+  // Preflight request = OPTIONS
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204); // No Content
+    res.end();
+    return;
   }
 
-  if (title === 'Other' && !titleOther) {
-    return res.status(400).send('titleOther is required when title is Other.');
+  // [Path 1] GET - Read all Users - 'http://localhost:5000/users/get'
+  if (segments[1] === 'get' && segments.length === 2 && req.method === 'GET') {
+    SQL = 'SELECT * FROM users';
+    db.query(SQL, (err, results) => {
+      if (err) {
+        res.writeHead(500);
+        res.end('Server Error');
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(results));
+    });
   }
+  // [Path 2] POST - Create a User - 'http://localhost:5000/users/create'
+  else if (segments[1] === 'create' && segments.length === 2 && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString(); // convert Buffer to string
+    });
+    req.on('end', () => {
+      const user = JSON.parse(body);
+      const { title, titleOther, firstName, surName, mobile, email } = user;
 
-  if (!firstName || !surName || !mobile || !email) {
-    return res.status(400).send('Missing required fields');
+      const validTitles = ['Mx', 'Ms', 'Mr', 'Mrs', 'Miss', 'Dr', 'Other'];
+      if (!validTitles.includes(title)) {
+        res.writeHead(400);
+        res.end('Invalid title. Must be one of Mx, Ms, Mr, Mrs, Miss, Dr, Other.');
+        return;
+      }
+
+      if (title === 'Other' && !titleOther) {
+        res.writeHead(400);
+        res.end('titleOther is required when title is Other.');
+        return;
+      }
+
+      if (!firstName || !surName || !mobile || !email) {
+        res.writeHead(400);
+        res.end('Missing required fields');
+        return;
+      }
+
+      SQL = 'INSERT INTO users SET ?';
+      db.query(SQL, user, (err, result) => {
+        if (err) {
+          res.writeHead(500);
+          res.end('Server Error');
+          return;
+        }
+        res.writeHead(201);
+        res.end(`User added with ID: ${result.insertId}`);
+      });
+    }); 
+  // [Path 3] GET - Read a User - 'http://localhost:5000/users/get/:userId'
+  } else if (segments[1] === 'get' && segments.length === 3 && req.method === 'GET') {
+    const userId = segments[2];
+    SQL = 'SELECT * FROM users WHERE userId = ?';
+    db.query(SQL, [userId], (err, result) => {
+      if (err) {
+        res.writeHead(500);
+        res.end('Server Error');
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    });
   }
+  // [Path 4] PUT - Update a User - 'http://localhost:5000/users/update/:userId'
+  else if (segments[1] === 'update' && segments.length === 3 && req.method === 'PUT') {
+    let body = '';
+    const userId = segments[2];
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      const user = JSON.parse(body);
+      const { title, titleOther, firstName, surName, mobile, email } = user;
 
-  const user = { title, titleOther, firstName, surName, mobile, email };
-  db.query('INSERT INTO users SET ?', user, (err, result) => {
-    if (err) throw err;
-    res.status(201).send(`User added with ID: ${result.insertId}`);
-  });
-});
-
-// GET - Get a User
-app.get('/users/get/:userId', (req, res) => {
-  const { userId } = req.params;
-  db.query('SELECT * FROM users WHERE userId = ?', [userId], (err, result) => {
-    if (err) throw err;
-    res.json(result);
-  });
-});
-
-// PUT - Update a User
-app.put('/users/update/:userId', (req, res) => {
-  const { userId } = req.params;
-  const { title, titleOther, firstName, surName, mobile, email } = req.body;
-
-  const validTitles = ['Mx', 'Ms', 'Mr', 'Mrs', 'Miss', 'Dr', 'Other'];
-  if (!validTitles.includes(title)) {
-    return res.status(400).send('Invalid title. Must be one of Mx, Ms, Mr, Mrs, Miss, Dr, Other.');
+      // Add your validation and update logic here
+      SQL = 'UPDATE users SET title = ?, titleOther = ?, firstName = ?, surName = ?, mobile = ?, email = ? WHERE userId = ?';
+      db.query(SQL, [title, titleOther, firstName, surName, mobile, email, userId], (err, result) => {
+        if (err) {
+          res.writeHead(500);
+          res.end('Server Error');
+          return;
+        }
+        res.writeHead(200);
+        res.end(`User with ID: ${userId} updated.`);
+      });
+    });
   }
-
-  if (title === 'Other' && !titleOther) {
-    return res.status(400).send('titleOther is required when title is Other.');
+  // DELETE - Delete a User - http://localhost:5000/users/delete/:userId'
+  else if (segments[1] === 'delete' && segments.length === 3 && req.method === 'DELETE') {
+    const userId = segments[2];
+    SQL = 'DELETE FROM users WHERE userId = ?';
+    db.query(SQL, [userId], (err, result) => {
+      if (err) {
+        res.writeHead(500);
+        res.end('Server Error');
+        return;
+      }
+      res.writeHead(200);
+      res.end(`User with ID: ${userId} deleted.`);
+    });
   }
-
-  db.query('UPDATE users SET title = ?, titleOther = ?, firstName = ?, surName = ?, mobile = ?, email = ? WHERE userId = ?'
-    , [title, titleOther, firstName, surName, mobile, email, userId], (err, result) => {
-    if (err) throw err;
-    res.send(`User with ID: ${userId} updated.`);
-  });
-});
-
-// DELETE - Delete a User
-app.delete('/users/delete/:userId', (req, res) => {
-  const { userId } = req.params;
-  db.query('DELETE FROM users WHERE userId = ?', [userId], (err, result) => {
-    if (err) throw err;
-    res.send(`User with ID: ${userId} deleted.`);
-  });
-});
-
-
-/* Addresses**************************************************************************** */
-// GET - Get all addresses for a specific user
-app.get('/users/:userId/addresses', (req, res) => {
-  const { userId } = req.params;
-  db.query('SELECT * FROM addresses WHERE userId = ?', [userId], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Internal Server Error');
-    }
-    res.json(results);
-  });
-});
-
-// POST - Create an address for a specific user
-app.post('/users/:userId/addresses/create', (req, res) => {
-  const { userId } = req.params;
-  const { addressType, addressLine1, addressLine2, town, countyCity, eircode } = req.body;
-  
-  if (!addressType || !addressLine1 || !town || !countyCity) {
-    return res.status(400).send('Missing required fields');
+  // Path Not Found
+  else {
+    res.writeHead(404);
+    res.end('Not Found');
   }
-
-  const address = { userId, addressType, addressLine1, addressLine2, town, countyCity, eircode };
-  db.query('INSERT INTO addresses SET ?', address, (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Internal Server Error');
-    }
-    res.status(201).send(`Address added with ID: ${result.insertId}`);
-  });
 });
 
-// GET - Get a specific address for a specific user
-app.get('/users/:userId/addresses/:addressId', (req, res) => {
-  const { userId, addressId } = req.params;
-  db.query('SELECT * FROM addresses WHERE userId = ? AND addressId = ?', [userId, addressId], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Internal Server Error');
-    }
-    res.json(result);
-  });
-});
-
-// PUT - Update a specific address for a specific user
-app.put('/users/:userId/addresses/:addressId/update', (req, res) => {
-  const { userId, addressId } = req.params;
-  const { addressType, addressLine1, addressLine2, town, countyCity, eircode } = req.body;
-
-  db.query(`UPDATE addresses SET addressType = ?, addressLine1 = ?, addressLine2 = ?
-  , town = ?, countyCity = ?, eircode = ? WHERE userId = ? AND addressId = ?`
-  , [addressType, addressLine1, addressLine2, town, countyCity, eircode, userId, addressId,]
-  , (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Internal Server Error');
-    }
-    res.send(`Address with ID: ${addressId} updated.`);
-  });
-});
-
-// DELETE - Delete a specific address for a specific user
-app.delete('/users/:userId/addresses/delete/:addressId/', (req, res) => {
-  const { userId, addressId } = req.params;
-  db.query('DELETE FROM addresses WHERE userId = ? AND addressId = ?', [userId, addressId], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Internal Server Error');
-    }
-    res.send(`Address with ID: ${addressId} deleted.`);
-  });
-});
-
-/* Port **************************************************************************** */
-// Setting the back-end port
-// Test the Vercel
-app.get("/", (req, res) => {
-	res.send("You succeeded to deploy backend to Vercel!");
-});
-
-app.listen(port, () => {
+// Server listen to the PORT
+const port = 5000;
+server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

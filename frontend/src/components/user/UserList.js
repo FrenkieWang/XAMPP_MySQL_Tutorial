@@ -10,6 +10,8 @@ function UserList() {
     axios.get('http://localhost:5000/users/get')
       .then(response => {
         setUsers(response.data);
+        // console.log(response.data);
+        // console.log(JSON.stringify(response.data));
       })
       .catch((error) => {
         console.log(error);
