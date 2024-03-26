@@ -13,6 +13,7 @@ const RequiredStar = styled.span`
 function EditUser() {
   const [user, setUser] = useState({
     title: '',
+    titleOther: '', 
     firstName: '',
     surName: '',
     mobile: '',
@@ -54,16 +55,37 @@ function EditUser() {
     <div>
       <h3>Edit User</h3>
       <form onSubmit={onSubmit}>
+        {/* User Title */}
         <div className="form-group">
           <label>Title:<RequiredStar>*</RequiredStar></label>
-          <input required
-            type="text"
+          <select required
             name="title"
             className="form-control"
             value={user.title}
             onChange={onChangeUser}
-          />
+          >
+            <option value="Mx">Mx</option>
+            <option value="Ms">Ms</option>
+            <option value="Mr">Mr</option>
+            <option value="Mrs">Mrs</option>
+            <option value="Miss">Miss</option>
+            <option value="Dr">Dr</option>
+            <option value="Other">Other</option>
+          </select>
         </div>
+        {/* Conditional TitleOther Input */}
+        {user.title === 'Other' && (
+          <div className="form-group">
+            <label>Title (Other):<RequiredStar>*</RequiredStar></label>
+            <input required
+              type="text"
+              name="titleOther"
+              className="form-control"
+              value={user.titleOther}
+              onChange={onChangeUser}
+            />
+          </div>
+        )}
         <div className="form-group"> 
           <label>First Name:<RequiredStar>*</RequiredStar></label>
           <input required

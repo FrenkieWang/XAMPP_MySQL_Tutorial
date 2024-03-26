@@ -36,12 +36,22 @@ app.get('/users/get', (req, res) => {
 
 // POST - Create a User
 app.post('/users/create', (req, res) => {
-  const { title, firstName, surName, mobile, email } = req.body;
+  const { title, titleOther, firstName, surName, mobile, email } = req.body;
+
+  const validTitles = ['Mx', 'Ms', 'Mr', 'Mrs', 'Miss', 'Dr', 'Other'];
+  if (!validTitles.includes(title)) {
+    return res.status(400).send('Invalid title. Must be one of Mx, Ms, Mr, Mrs, Miss, Dr, Other.');
+  }
+
+  if (title === 'Other' && !titleOther) {
+    return res.status(400).send('titleOther is required when title is Other.');
+  }
+
   if (!firstName || !surName || !mobile || !email) {
     return res.status(400).send('Missing required fields');
   }
 
-  const user = { title, firstName, surName, mobile, email };
+  const user = { title, titleOther, firstName, surName, mobile, email };
   db.query('INSERT INTO users SET ?', user, (err, result) => {
     if (err) throw err;
     res.status(201).send(`User added with ID: ${result.insertId}`);
@@ -60,8 +70,19 @@ app.get('/users/get/:userId', (req, res) => {
 // PUT - Update a User
 app.put('/users/update/:userId', (req, res) => {
   const { userId } = req.params;
-  const { title, firstName, surName, mobile, email } = req.body;
-  db.query('UPDATE users SET title = ?, firstName = ?, surName = ?, mobile = ?, email = ? WHERE userId = ?', [title, firstName, surName, mobile, email, userId], (err, result) => {
+  const { title, titleOther, firstName, surName, mobile, email } = req.body;
+
+  const validTitles = ['Mx', 'Ms', 'Mr', 'Mrs', 'Miss', 'Dr', 'Other'];
+  if (!validTitles.includes(title)) {
+    return res.status(400).send('Invalid title. Must be one of Mx, Ms, Mr, Mrs, Miss, Dr, Other.');
+  }
+
+  if (title === 'Other' && !titleOther) {
+    return res.status(400).send('titleOther is required when title is Other.');
+  }
+
+  db.query('UPDATE users SET title = ?, titleOther = ?, firstName = ?, surName = ?, mobile = ?, email = ? WHERE userId = ?'
+    , [title, titleOther, firstName, surName, mobile, email, userId], (err, result) => {
     if (err) throw err;
     res.send(`User with ID: ${userId} updated.`);
   });

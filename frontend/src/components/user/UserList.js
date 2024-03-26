@@ -7,7 +7,7 @@ function UserList() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/users/get/')
+    axios.get('http://localhost:5000/users/get')
       .then(response => {
         setUsers(response.data);
       })
@@ -44,7 +44,7 @@ function UserList() {
         <tbody>
           {users.map(currentUser => (
             <tr key={currentUser.userId}>
-              <td>{currentUser.title}</td>
+              <td>{currentUser.title === 'Other' ? currentUser.titleOther : currentUser.title}</td>
               <td>{currentUser.firstName}</td>
               <td>{currentUser.surName}</td>
               <td>{currentUser.mobile}</td>
