@@ -31,5 +31,4 @@ export default App;
 
 /*
   Local Host: http://localhost:5000
-  Deployed Host: https://mern-stack-crud-3-tables.vercel.app/
 */

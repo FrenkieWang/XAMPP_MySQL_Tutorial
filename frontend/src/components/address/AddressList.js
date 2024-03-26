@@ -23,7 +23,6 @@ function AddressList() {
         console.log(response.data);
       });
 
-      alert(`http://localhost:5000/users/${userId}/addresses/delete/${addressId}`);
     setAddresses(addresses.filter(address => address.addressId !== addressId));
   }
 
