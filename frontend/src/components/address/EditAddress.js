@@ -23,14 +23,25 @@ function EditAddress() {
   let { userId, addressId } = useParams();
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/users/${userId}/addresses/${addressId}`)
-      .then(response => {
-        // addressId is unique, get the first address from Array
-        setAddress(response.data[0]);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `http://localhost:5000/users/${userId}/addresses/${addressId}`, true);
+  
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        const addresses = JSON.parse(this.responseText);
+        // `addressId` is unique -> get the first element in Array.
+        setAddress(addresses[0]);
+      } else {
+        console.log('Error:', this.statusText);
+      }
+    };
+  
+    xhr.onerror = function() {
+      console.error('Network error');
+    };
+  
+    xhr.send();
+    
   }, [userId, addressId]);
 
   function onChangeAddress(e) {
@@ -44,11 +55,25 @@ function EditAddress() {
   function onSubmit(e) {
     e.preventDefault();
 
-    axios.put(`http://localhost:5000/users/${userId}/addresses/${addressId}/update`, address)
-      .then(res => console.log(res.data))
-      .catch(error => console.log(error));
-
-    window.location = `/user/${userId}/address/`;
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', `http://localhost:5000/users/${userId}/addresses/${addressId}/update`, true);  
+    // Set the `type of data` to be sent in Request Header
+    xhr.setRequestHeader('Content-Type', 'application/json');
+  
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        // Navigate the Page
+        window.location = `/user/${userId}/address/`;
+      } else {
+        console.log('Error:', this.statusText);
+      }
+    };
+  
+    xhr.onerror = function() {
+      console.error('Network error');
+    };
+    // Set `body` information in the request.
+    xhr.send(JSON.stringify(address));
   }
 
   return (

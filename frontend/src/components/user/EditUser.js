@@ -1,5 +1,4 @@
 import React from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
@@ -23,14 +22,25 @@ function EditUser() {
   let { userId } = useParams();
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/users/get/${userId}`)
-      .then(response => {
-        // userId is unique, get the first user from Array
-        setUser(response.data[0]);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `http://localhost:5000/users/get/${userId}`, true);
+  
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        const users = JSON.parse(this.responseText);
+        // `userId` is unique -> get the first element in Array.
+        setUser(users[0]);
+      } else {
+        console.log('Error:', this.statusText);
+      }
+    };
+  
+    xhr.onerror = function() {
+      console.error('Network error');
+    };
+  
+    xhr.send();
+
   }, [userId]);
 
   function onChangeUser(e) {
@@ -43,12 +53,26 @@ function EditUser() {
 
   function onSubmit(e) {
     e.preventDefault();
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', `http://localhost:5000/users/update/${userId}`, true);
+    // Set the `type of data` to be sent in Request Header
+    xhr.setRequestHeader('Content-Type', 'application/json');
 
-    axios.put(`http://localhost:5000/users/update/${userId}`, user)
-      .then(res => console.log(res.data))
-      .catch(error => console.log(error));
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        // Then navigate the Page
+        window.location = '/';
+      } else {
+        console.log('Error:', this.statusText);
+      }
+    };
 
-    window.location = '/';
+    xhr.onerror = function() {
+      console.error('Network error');
+    };
+    // Set `body` information in the request.
+    xhr.send(JSON.stringify(user));
   }
 
   return (

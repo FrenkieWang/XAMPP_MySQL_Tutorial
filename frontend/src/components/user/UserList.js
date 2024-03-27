@@ -1,30 +1,49 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 function UserList() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/users/get')
-      .then(response => {
-        setUsers(response.data);
-        // console.log(response.data);
-        // console.log(JSON.stringify(response.data));
-      })
-      .catch((error) => {
-        console.log(error);
-      })
+    const xhr = new XMLHttpRequest();
+    // Configure HTTP Request
+    xhr.open('GET', 'http://localhost:5000/users/get', true);  
+    // When the request completes successfully and receives a response from the server
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        const users = JSON.parse(this.responseText);
+        setUsers(users);
+      } else {
+        console.log('Failed to fetch users:', this.statusText);
+      }
+    };  
+    // When meets network error
+    xhr.onerror = function() {
+      console.error('Network error');
+    };  
+    // Send the HTTP request
+    xhr.send();
+    
   }, []);
 
   function deleteUser(userId) {
-    axios.delete(`http://localhost:5000/users/delete/${userId}`)
-      .then(response => { 
-        console.log(response.data);
-      });
-
-    setUsers(users.filter(user => user.userId !== userId));
+    const xhr = new XMLHttpRequest();
+    xhr.open('DELETE', `http://localhost:5000/users/delete/${userId}`, true);
+  
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        setUsers(users.filter(user => user.userId !== userId));
+      } else {
+        console.log('Failed to delete User:', this.statusText);
+      }
+    };
+  
+    xhr.onerror = function() {
+      console.error('Network error');
+    };
+  
+    xhr.send();
   }
 
   return (

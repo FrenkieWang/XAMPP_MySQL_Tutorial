@@ -1,6 +1,5 @@
 import React from 'react';
 import { useState } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -31,13 +30,27 @@ function CreateUser() {
   function onSubmit(e) {
     e.preventDefault();
 
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:5000/users/create', true);  
+    // Set the `type of data` to be sent in Request Header
+    xhr.setRequestHeader('Content-Type', 'application/json');
+  
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        // Then navigate the Page
+        window.location = '/';
+      } else {
+        console.log('Error:', this.statusText);
+      }
+    };
+  
+    xhr.onerror = function() {
+      console.error('Network error');
+    };
+  
+    // Set `body` information in the request.
     console.log(user);
-
-    axios.post('http://localhost:5000/users/create', user)
-      .then(res => console.log(res.data))
-      .catch(error => console.log(error));
-
-    window.location = '/';
+    xhr.send(JSON.stringify(user));
   }
 
   return (

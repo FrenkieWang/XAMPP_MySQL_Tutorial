@@ -1,6 +1,5 @@
 import React from 'react';
 import { useState } from 'react';
-import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -32,14 +31,29 @@ function CreateAddress() {
 
   function onSubmit(e) {
     e.preventDefault();
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `http://localhost:5000/users/${userId}/addresses/create`, true);  
+    // Set the `type of data` to be sent in Request Header
+    xhr.setRequestHeader('Content-Type', 'application/json');
+  
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        // Then navigate the Page
+        window.location = `/user/${userId}/address/`;
+      } else {
+        console.log('Error:', this.statusText);
+      }
+    };
+  
+    xhr.onerror = function() {
+      console.error('Network error');
+    };
+    // Set `body` information in the request.
     console.log(address);
-
-    axios.post(`http://localhost:5000/users/${userId}/addresses/create`, address)
-      .then(res => console.log(res.data))
-      .catch(error => console.log(error));
-
-    window.location = `/user/${userId}/address/`;
+    xhr.send(JSON.stringify(address));
   }
+  
 
   return (
     <div>

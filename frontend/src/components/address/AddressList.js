@@ -1,6 +1,5 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 
 function AddressList() {
@@ -8,22 +7,44 @@ function AddressList() {
   const [addresses, setAddresses] = useState([]);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/users/${userId}/addresses`)
-      .then(response => {
-        setAddresses(response.data);
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `http://localhost:5000/users/${userId}/addresses`, true);
+    
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        console.log(JSON.parse(this.responseText));
+        const addresses = JSON.parse(this.responseText);
+        setAddresses(addresses);
+      } else {
+        console.log('Error:', this.statusText);
+      }
+    };
+    
+    xhr.onerror = function() {
+      console.error('Network error');
+    };
+    
+    xhr.send();    
+    
   }, [userId]);
 
   function deleteAddress(addressId) {
-    axios.delete(`http://localhost:5000/users/${userId}/addresses/delete/${addressId}`)
-      .then(response => { 
-        console.log(response.data);
-      });
+    const xhr = new XMLHttpRequest();
+    xhr.open('DELETE', `http://localhost:5000/users/${userId}/addresses/delete/${addressId}`, true);
+  
+    xhr.onload = function() {
+      if (this.status >= 200 && this.status < 300) {
+        setAddresses(addresses.filter(address => address.addressId !== addressId));
+      } else {
+        console.log('Failed to delete Address:', this.statusText);
+      }
+    };
+  
+    xhr.onerror = function() {
+      console.error('Network error');
+    };
 
-    setAddresses(addresses.filter(address => address.addressId !== addressId));
+    xhr.send();     
   }
 
   return (
