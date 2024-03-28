@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User and Address Management</title>
+    <link rel="stylesheet" type="text/css" href="ca4.css">
+</head>
+<body>
+    <h1>User Management</h1>
+    <div id="userForm">
+        <!-- 简单的用户添加表单 -->
+        <input type="text" id="firstName" placeholder="First Name">
+        <input type="text" id="surName" placeholder="Sur Name">
+        <input type="text" id="mobile" placeholder="Mobile">
+        <input type="text" id="email" placeholder="Email">
+        <button onclick="addUser()">Add User</button>
+    </div>
+    <table id="usersTable">
+        <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Sur Name</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+
+    <h1>Address Management</h1>
+    <div id="addressForm">
+        <!-- 简单的地址添加表单 -->
+        <input type="number" id="userId" placeholder="User ID">
+        <input type="text" id="addressType" placeholder="Address Type">
+        <input type="text" id="addressLine1" placeholder="Address Line 1">
+        <input type="text" id="town" placeholder="Town">
+        <input type="text" id="countyCity" placeholder="County/City">
+        <button onclick="addAddress()">Add Address</button>
+    </div>
+    <table id="addressesTable">
+        <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Address Type</th>
+            <th>Address Line 1</th>
+            <th>Town</th>
+            <th>County/City</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+
+    <script src="ca4.js"></script>
+</body>
+</html>
