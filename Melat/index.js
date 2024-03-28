@@ -18,13 +18,6 @@ var server = http.createServer(); // create the server
 var userDatabase = []; // this is the in-memory database that holds the JSON records
 // supplied by the POST request via route /api/user
 
-// 设置通用头部的函数
-function setCommonHeaders(response) {
-  response.setHeader("Access-Control-Allow-Origin", "*");
-  response.setHeader("Access-Control-Allow-Methods", "OPTIONS, POST, GET, DELETE, PUT");
-  response.setHeader("Access-Control-Max-Age", "2592000"); // 30天
-}
-
 // listen for requests from clients
 server.on("request", function (request, response) {
   setCommonHeaders(response);
