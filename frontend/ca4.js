@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     userList.appendChild(tr);
                 });
             }else{
-                console.log('Failed to fetch users:', this.statusText);
+                console.log('Failed to fetch Users:', this.statusText);
             }
         };
 
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('User created successfully');
                 refreshUsers(); // Refresh <table> after CREATE
             } else {
-                console.log('Error:', this.statusText);
+                console.log('Failed to Create a User:', this.statusText);
             }
         };
     
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Refresh TitleOther Input
                 document.getElementById('titleOtherGroup').style.display = user.title === 'Other' ? 'block' : 'none';
             } else {
-                console.log('Failed to fetch user:', this.statusText);
+                console.log('Failed to Get this User:', this.statusText);
             }
         };
 
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('User updated successfully');
                 refreshUsers(); // Refresh <table> after UPDATE
             } else {
-                console.log('Error:', this.statusText);
+                console.log('Failed to Edit User:', this.statusText);
             }
         };
 
@@ -194,17 +194,20 @@ document.addEventListener('DOMContentLoaded', function() {
     window.deleteUser = function(userId) {
         const xhr = new XMLHttpRequest();
         xhr.open('DELETE', `http://localhost:5000/users/delete/${userId}`, true);
+        
         xhr.onload = function() {
             if (this.status >= 200 && this.status < 300) {
                 console.log(`User: ${userId} deleted successfully`);
                 refreshUsers(); // Refresh the list after deleting
             } else {
-                console.log('Failed to delete user:', this.statusText);
+                console.log('Failed to Delete User:', this.statusText);
             }
         };
+
         xhr.onerror = function() {
             console.error('Network error');
         };
+
         xhr.send();
     }; 
 });
