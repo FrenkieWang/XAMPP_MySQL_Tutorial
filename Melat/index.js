@@ -20,8 +20,6 @@ var userDatabase = []; // this is the in-memory database that holds the JSON rec
 
 // listen for requests from clients
 server.on("request", function (request, response) {
-  setCommonHeaders(response);
-  
   var currentRoute = url.format(request.url); // get the route (/ or /api/user)
   var currentMethod = request.method; // get the HTTP request type (POST - Create; GET - Retrieve)
   var requestBody = ""; // will contain the extracted POST data later
