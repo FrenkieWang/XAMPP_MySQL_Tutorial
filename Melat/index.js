@@ -18,8 +18,19 @@ var server = http.createServer(); // create the server
 var userDatabase = []; // this is the in-memory database that holds the JSON records
 // supplied by the POST request via route /api/user
 
+function setCORSHeaders(response) {
+  // set the appropriate headers
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Allow-Methods", "OPTIONS, POST, GET");
+  response.setHeader("Access-Control-Max-Age", "2592000"); // 30 days
+  response.setHeader("Content-Type", "text/html"); // 30 days
+}
+
 // listen for requests from clients
 server.on("request", function (request, response) {
+  // Set CORS in every response's Header, not only in path '/'
+  setCORSHeaders(response)
+
   var currentRoute = url.format(request.url); // get the route (/ or /api/user)
   var currentMethod = request.method; // get the HTTP request type (POST - Create; GET - Retrieve)
   var requestBody = ""; // will contain the extracted POST data later
@@ -35,13 +46,6 @@ server.on("request", function (request, response) {
     case "/": //root of the application
       fs.readFile(__dirname + "/index.html", function (err, data) {
         // get the file and add to data
-        var headers = {
-          // set the appropriate headers
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
-          "Access-Control-Max-Age": 2592000, // 30 days
-          "Content-Type": "text/html",
-        };
         response.writeHead(200, headers);
         response.end(data); // return the data (index.html)
       }); // as part of the response
