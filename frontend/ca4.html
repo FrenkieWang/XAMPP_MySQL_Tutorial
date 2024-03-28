@@ -77,9 +77,78 @@
                 </div>                
                 <a href="#" id="backToUserList">Back to User List</a>
             </form>
-        </div>    
+        </div>  <!-- END of createEditUserForm -->
 
-    </div>
+        <div id="addressDashBoard" style="display: block;">
+            <h3>CRUD for User({})'s Address</h3>
+            <a href="/user/${userId}/address/create">Create User</a>
+
+            <table id="addressTable">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Address ID</th>
+                        <th>Type</th>
+                        <th>AddressLine</th>
+                        <th>Town</th>
+                        <th>countyCity</th>
+                        <th>Postal Code</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="addressList">
+                    <!-- Addresses will be loaded here by JavaScript -->
+                </tbody>
+            </table>            
+
+            <div id="createEditAddressForm" style="display: block;">
+                <h3>Create/Edit New Address</h3>
+                <h5 id="editingAddress">Editing Address: None</h5>
+                <form id="addressForm">
+                    <div class="form-group">
+                        <label>Address Type:<span style="color: red;">*</span></label>
+                        <div>
+                            <input type="radio" id="home" name="addressType" value="home"/>
+                            <label for="home">Home</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="shipping" name="addressType" value="shipping"/>
+                            <label for="shipping">Shipping</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Address Line 1:<span style="color: red;">*</span></label>
+                        <input required type="text" name="addressLine1" class="form-control"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Address Line 2:</label>
+                        <input type="text" name="addressLine2" class="form-control"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Town/City:<span style="color: red;">*</span></label>
+                        <input required type="text" name="town" class="form-control"/>
+                    </div>
+                    <div class="form-group">
+                        <label>County/City:<span style="color: red;">*</span></label>
+                        <input required type="text" name="countyCity" class="form-control"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Eircode:</label>
+                        <input type="text" name="eircode" class="form-control"/>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" id="createAddressButton">Create Address</button>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" id="editAddressButton" disabled>Edit Address</button>
+                    </div>                
+                    <a href="#" id="backToAddressList">Back to Address List</a>
+                </form>
+            </div>  <!-- END of createEditAddressForm -->
+
+        </div> <!-- END of addressDashboard -->
+
+    </div> <!-- END of APP -->
 
     <script src="ca4.js"></script>
 </body>
