@@ -26,24 +26,21 @@ const server = http.createServer((request, response) => {
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   // OPTIONS -> Preflight request ... Browser will determine whether server is safe
-  // Browser will determine whether server is safe
   if (request.method === 'OPTIONS') {
     response.writeHead(204); // No Content
     response.end();
     return;
   }
 
-  // Get request URL, split path by '/', remove empty segments.
+  // Get request URL and print in Console 
   const URL = url.parse(request.url, true);
   const path = URL.pathname;
-  const segments = path.split('/').filter(Boolean); 
-
-  let SQL = ''; // Initialize  SQL as null
+  console.log(path);
 
 
-  // [Path 1 - Get] -- Get all Modules - '/modules/get'
+  // [Path 1 - Get] -- Get all Modules,  path === '/modules/get'
   if (path === '/modules/get' && request.method === 'GET') {
-    SQL = 'SELECT * FROM modules';
+    let SQL = 'SELECT * FROM modules';
     db.query(SQL, (error, results) => {
       if (error) {
         response.writeHead(500);
@@ -55,18 +52,20 @@ const server = http.createServer((request, response) => {
     });
   }
 
-  // [Path 2 - POST] Create a Module - '/modules/create'
+  // [Path 2 - POST] -- Create a Module,  path === '/modules/create'
   else if (path === '/modules/create' && request.method === 'POST') {
     let body = '';
     request.on('data', chunk => {
       //convert Buffer Chunks to Strings and concatenate them
       body += chunk.toString();
     });
+
     request.on('end', () => {
       const module = JSON.parse(body); // String -> JSON
+      const { code, moduleName } = module;
 
-      SQL = 'INSERT INTO modules SET ?';
-      db.query(SQL, module, (error, result) => {
+      let SQL = 'INSERT INTO modules (code, moduleName) VALUES (?, ?)';
+      db.query(SQL, [code, moduleName], (error, result) => {
         if (error) {
           response.writeHead(500);
           response.end('Server Error');
@@ -78,11 +77,12 @@ const server = http.createServer((request, response) => {
     }); 
   } 
 
-  // [Path 3 - GET] -- Get a Module - '/modules/get/:moduleId'
-  else if (segments[1] === 'get' && segments.length === 3 && request.method === 'GET') {
+  // [Path 3 - GET] -- Get a Module,  path === '/modules/get/:moduleId'
+  else if (path.startsWith('/modules/get/') && request.method === 'GET') {
+    const segments = path.split('/').filter(Boolean);
     const moduleId = segments[2]; // This is `/:moduleId`
 
-    SQL = 'SELECT * FROM modules WHERE moduleId = ?';
+    let SQL = 'SELECT * FROM modules WHERE moduleId = ?';
     db.query(SQL, [moduleId], (error, result) => {
       if (error) {
         response.writeHead(500);
@@ -94,11 +94,12 @@ const server = http.createServer((request, response) => {
     });
   }
 
-  // [Path 4 - PUT] -- Update a Module - '/modules/update/:moduleId'
-  else if (segments[1] === 'update' && segments.length === 3 && request.method === 'PUT') {
-    let body = '';
+  // [Path 4 - PUT] -- Update a Module,  path === '/modules/update/:moduleId'
+  else if (path.startsWith('/modules/update/') && request.method === 'PUT') {
+    const segments = path.split('/').filter(Boolean);
     const moduleId = segments[2];
 
+    let body = '';
     request.on('data', chunk => {
       body += chunk.toString();
     });
@@ -107,7 +108,7 @@ const server = http.createServer((request, response) => {
       const module = JSON.parse(body);
       const { code, moduleName } = module;
 
-      SQL = 'UPDATE modules SET code = ?, moduleName = ? WHERE moduleId = ?';
+      let SQL = 'UPDATE modules SET code = ?, moduleName = ? WHERE moduleId = ?';
       db.query(SQL, [code, moduleName, moduleId], (error, result) => {
         if (error) {
           response.writeHead(500);
@@ -120,11 +121,12 @@ const server = http.createServer((request, response) => {
     });
   }
 
-  // [Path 5 -- DELETE] -- Delete a Module - '/modules/delete/:modulId'
-  else if (segments[1] === 'delete' && segments.length === 3  && request.method === 'DELETE') {
+  // [Path 5 -- DELETE] -- Delete a Module,  path === '/modules/delete/:modulId'
+  else if (path.startsWith('/modules/delete/') && request.method === 'DELETE') {
+    const segments = path.split('/').filter(Boolean);
     const moduleId = segments[2];
 
-    SQL = 'DELETE FROM modules WHERE moduleId = ?';
+    let SQL = 'DELETE FROM modules WHERE moduleId = ?';
     db.query(SQL, [moduleId], (error, result) => {
       if (error) {
         response.writeHead(500);
@@ -144,7 +146,7 @@ const server = http.createServer((request, response) => {
 }); // end of http.createServer
 
 
-// Server listen to the PORT => http://localhost:5000/
+// Server listen to the PORT => http://localhost:5000
 const port = 5000;
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
