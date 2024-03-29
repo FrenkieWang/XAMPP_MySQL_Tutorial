@@ -13,65 +13,37 @@
 </head>
 <body>
     <div class = "app">
-        <h3>CRUD for Users</h3>
-        <table id="userTable">
+        <h3>CRUD for Maynooth Module</h3>
+        <table>
             <thead>
                 <tr>
-                    <th>User ID</th>
-                    <th>Title</th>
-                    <th>First Name</th>
-                    <th>Sur Name</th>
-                    <th>Mobile</th>
-                    <th>Email</th>
-                    <th>Address</th>
-                    <th>Actions</th>
+                    <th>Module ID</th>
+                    <th>Module Code</th>
+                    <th>Module Name</th>
                 </tr>
             </thead>
-            <tbody id="userList">
-                <!-- Users will be loaded here by JavaScript -->
+            <tbody id="moduleList">
+                <!-- Modules will be loaded here by JavaScript -->
             </tbody>
         </table>
 
-        <h3>Create/Edit New User</h3>
-        <h5 id="editingUser">Editing User: None</h5>
-        <form id="userForm">
+        <h3>Module Submit Form</h3>
+        <form id="moduleForm">
+            <!-- Input Item -->
             <div class="form-group">
-                <label>Title:<span style="color: red;">*</span></label>
-                <select name="title" required>
-                    <option value="Mx">Mx</option>
-                    <option value="Ms">Ms</option>
-                    <option value="Mr">Mr</option>
-                    <option value="Mrs">Mrs</option>
-                    <option value="Miss">Miss</option>
-                    <option value="Dr">Dr</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="form-group" id="titleOtherGroup" style="display: none;">
-                <label>Title (Other):</label>
-                <input type="text" name="titleOther">
+                <label>Module Code:</label>
+                <input type="text" name="code" required>
             </div>
             <div class="form-group">
-                <label>First Name:<span style="color: red;">*</span></label>
-                <input type="text" name="firstName" required>
+                <label>Module Name:</label>
+                <input type="text" name="moduleName" required>
+            </div>
+            <!-- Button Controller -->
+            <div class="form-group">
+                <button type="button" id="createModuleButton">Create Module</button>
             </div>
             <div class="form-group">
-                <label>Last Name:<span style="color: red;">*</span></label>
-                <input type="text" name="surName" required>
-            </div>
-            <div class="form-group">
-                <label>Phone Number:<span style="color: red;">*</span></label>
-                <input type="text" name="mobile" required>
-            </div>
-            <div class="form-group">
-                <label>Email:<span style="color: red;">*</span></label>
-                <input type="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <button type="button" id="createUserButton">Create User</button>
-            </div>
-            <div class="form-group">
-                <button type="button" id="editUserButton" disabled>Edit User</button>
+                <button type="button" id="editModuleButton" disabled>Edit Module</button>
             </div>  
         </form>       
     </div> <!-- END of APP -->

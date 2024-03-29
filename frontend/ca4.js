@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // [Path 1] GET - Read all Users - '/users/get'
     function refreshUsers() {
-        const xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open('GET', 'http://localhost:5000/users/get', true);
 
         xhr.onload = function() {
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // [Path 5] DELETE - Delete a User - '/users/delete/:userId'
     window.deleteUser = function(userId) {
-        const xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open('DELETE', `http://localhost:5000/users/delete/${userId}`, true);
         
         xhr.onload = function() {
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
             address[key] = value;
         });
     
-        const xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open('POST', `http://localhost:5000/users/${currentEditingUserId}/addresses/create`, true);    
 
         xhr.setRequestHeader('Content-Type', 'application/json');
@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentEditingAddressId = addressId;   
         document.getElementById('editingAddress').innerText = `Editing Address: ${currentEditingAddressId}`;
 
-        const xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open('GET', `http://localhost:5000/users/${currentEditingUserId}/addresses/${currentEditingAddressId}`, true);
     
         xhr.onload = function() {
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // [Path 10] DELETE - Delete a specific address for a specific user - '/users/:userId/addresses/delete/:addressId'   
     window.deleteAddress = function(userId, addressId) {
-        const xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open('DELETE', `http://localhost:5000/users/${userId}/addresses/delete/${addressId}`, true);
         
         xhr.onload = function() {

@@ -16,25 +16,30 @@ db.connect((error) => {
   console.log('Connected to the database');
 });
 
+
 // Configure HTTP Server - 5 Paths
 const server = http.createServer((request, response) => {
-  const URL = url.parse(request.url, true);
-  const path = URL.pathname;
-  const segments = path.split('/').filter(Boolean); // Split path and remove empty segments
-  
-  let SQL = ''; // Initialize  SQL as null
 
   // Set CORS headers to allows Cross-Origin-Resourse-Share
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); 
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Preflight request = OPTIONS
+  // OPTIONS -> Preflight request ... Browser will determine whether server is safe
+  // Browser will determine whether server is safe
   if (request.method === 'OPTIONS') {
     response.writeHead(204); // No Content
     response.end();
     return;
   }
+
+  // Get request URL, split path by '/', remove empty segments.
+  const URL = url.parse(request.url, true);
+  const path = URL.pathname;
+  const segments = path.split('/').filter(Boolean); 
+
+  let SQL = ''; // Initialize  SQL as null
+
 
   // [Path 1 - Get] -- Get all Modules - '/modules/get'
   if (path === '/modules/get' && request.method === 'GET') {
@@ -71,10 +76,10 @@ const server = http.createServer((request, response) => {
         response.end(`Module created successfully!`);
       });
     }); 
-
+  } 
 
   // [Path 3 - GET] -- Get a Module - '/modules/get/:moduleId'
-  } else if (segments[1] === 'get' && segments.length === 3 && request.method === 'GET') {
+  else if (segments[1] === 'get' && segments.length === 3 && request.method === 'GET') {
     const moduleId = segments[2]; // This is `/:moduleId`
 
     SQL = 'SELECT * FROM modules WHERE moduleId = ?';
@@ -101,9 +106,6 @@ const server = http.createServer((request, response) => {
     request.on('end', () => {
       const module = JSON.parse(body);
       const { code, moduleName } = module;
-
-      console.log(module);
-      console.log(moduleId);
 
       SQL = 'UPDATE modules SET code = ?, moduleName = ? WHERE moduleId = ?';
       db.query(SQL, [code, moduleName, moduleId], (error, result) => {
