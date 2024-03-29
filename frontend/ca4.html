@@ -12,76 +12,82 @@
     </style>
 </head>
 <body>
-    <div>
-        <h3>CRUD for Users</h3>
-        <a href="/user/create">Create User</a>
-        <table id="userTable">
-            <thead>
-                <tr>
-                    <th>User ID</th>
-                    <th>Title</th>
-                    <th>First Name</th>
-                    <th>Sur Name</th>
-                    <th>Mobile</th>
-                    <th>Email</th>
-                    <th>Address</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="userList">
-                <!-- Users will be loaded here by JavaScript -->
-            </tbody>
-        </table>
+    <div class = "app">
 
-        <div id="createEditUserForm" style="display: none;">
-            <h3>Create/Edit New User</h3>
-            <h5 id="editingUser">Editing User: None</h5>
-            <form id="userForm">
-                <div class="form-group">
-                    <label>Title:<span style="color: red;">*</span></label>
-                    <select name="title" required>
-                        <option value="Mx">Mx</option>
-                        <option value="Ms">Ms</option>
-                        <option value="Mr">Mr</option>
-                        <option value="Mrs">Mrs</option>
-                        <option value="Miss">Miss</option>
-                        <option value="Dr">Dr</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="form-group" id="titleOtherGroup" style="display: none;">
-                    <label>Title (Other):</label>
-                    <input type="text" name="titleOther">
-                </div>
-                <div class="form-group">
-                    <label>First Name:<span style="color: red;">*</span></label>
-                    <input type="text" name="firstName" required>
-                </div>
-                <div class="form-group">
-                    <label>Last Name:<span style="color: red;">*</span></label>
-                    <input type="text" name="surName" required>
-                </div>
-                <div class="form-group">
-                    <label>Phone Number:<span style="color: red;">*</span></label>
-                    <input type="text" name="mobile" required>
-                </div>
-                <div class="form-group">
-                    <label>Email:<span style="color: red;">*</span></label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <button type="button" id="createUserButton">Create User</button>
-                </div>
-                <div class="form-group">
-                    <button type="button" id="editUserButton" disabled>Edit User</button>
-                </div>                
-                <a href="#" id="backToUserList">Back to User List</a>
-            </form>
-        </div>  <!-- END of createEditUserForm -->
+        <div id="userDashBoard" style="display: block;">
+            <h3>CRUD for Users</h3>
+            <a href="/user/create">Open User Form</a>
 
-        <div id="addressDashBoard" style="display: block;">
-            <h3>CRUD for User({})'s Address</h3>
-            <a href="/user/${userId}/address/create">Create User</a>
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Title</th>
+                        <th>First Name</th>
+                        <th>Sur Name</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userList">
+                    <!-- Users will be loaded here by JavaScript -->
+                </tbody>
+            </table>
+
+            <div id="createEditUserForm" style="display: none;">
+                <h3>Create/Edit New User</h3>
+                <h5 id="editingUser">Editing User: None</h5>
+
+                <form id="userForm">
+                    <div class="form-group">
+                        <label>Title:<span style="color: red;">*</span></label>
+                        <select name="title" required>
+                            <option value="Mx">Mx</option>
+                            <option value="Ms">Ms</option>
+                            <option value="Mr">Mr</option>
+                            <option value="Mrs">Mrs</option>
+                            <option value="Miss">Miss</option>
+                            <option value="Dr">Dr</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="titleOtherGroup" style="display: none;">
+                        <label>Title (Other):</label>
+                        <input type="text" name="titleOther">
+                    </div>
+                    <div class="form-group">
+                        <label>First Name:<span style="color: red;">*</span></label>
+                        <input type="text" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name:<span style="color: red;">*</span></label>
+                        <input type="text" name="surName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number:<span style="color: red;">*</span></label>
+                        <input type="text" name="mobile" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email:<span style="color: red;">*</span></label>
+                        <input type="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" id="createUserButton">Create User</button>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" id="editUserButton" disabled>Edit User</button>
+                    </div>  
+
+                    <a href="#" class="backToUserList">Back to User List</a>
+                </form>
+            </div>  <!-- END of createEditUserForm -->            
+        </div> <!-- END of userDashboard -->
+
+        <div id="addressDashBoard" style="display: none;">
+            <h3 id="userAddressTitle">CRUD for User( )'s Address</h3>
+            <a href="/user/address/create">Open Address Form</a>
 
             <table id="addressTable">
                 <thead>
@@ -101,9 +107,10 @@
                 </tbody>
             </table>            
 
-            <div id="createEditAddressForm" style="display: block;">
+            <div id="createEditAddressForm" style="display: none;">
                 <h3>Create/Edit New Address</h3>
                 <h5 id="editingAddress">Editing Address: None</h5>
+
                 <form id="addressForm">
                     <div class="form-group">
                         <label>Address Type:<span style="color: red;">*</span></label>
@@ -141,11 +148,13 @@
                     </div>
                     <div class="form-group">
                         <button type="button" id="editAddressButton" disabled>Edit Address</button>
-                    </div>                
+                    </div>  
+
                     <a href="#" id="backToAddressList">Back to Address List</a>
                 </form>
             </div>  <!-- END of createEditAddressForm -->
 
+            <a href="#" class="backToUserList">Back to User List</a>            
         </div> <!-- END of addressDashboard -->
 
     </div> <!-- END of APP -->
