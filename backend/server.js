@@ -14,280 +14,267 @@ const db = mysql.createConnection({
 });
 
 // Connect to Database
-db.connect((err) => {
-  if (err) throw err;
+db.connect((error) => {
+  if (error) throw error;
   console.log('Connected to the database');
 });
 
-const server = http.createServer((req, res) => {
-  const reqUrl = url.parse(req.url, true);
+const server = http.createServer((request, response) => {
+  const reqUrl = url.parse(request.url, true);
   const path = reqUrl.pathname;
   const segments = path.split('/').filter(Boolean); // Split path and remove empty segments
   let SQL = ''; // Initialize  SQL as null
 
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); 
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); 
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   // Preflight request = OPTIONS
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204); // No Content
-    res.end();
+  if (request.method === 'OPTIONS') {
+    response.writeHead(204); // No Content
+    response.end();
     return;
   }
 
-  // [Path 1] GET - Read all Users - '/users/get'
-  if (segments[1] === 'get' && segments.length === 2 
-  && req.method === 'GET') {
-    SQL = 'SELECT * FROM users';
-    db.query(SQL, (err, results) => {
-      if (err) {
-        res.writeHead(500);
-        res.end('Server Error');
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(results));
-    });
+  // [Path 1] GET - Generate Random User - '/users/get/generate-user'
+  if (path === '/users/generate-user') {
+    const user = generateRandomUser(); 
+    response.writeHead(200, { 'Content-Type': 'application/json' });
+    response.end(JSON.stringify(user));
   }
 
-  // [Path 2] GET - Read all Users - '/users/get/generate-user'
-  else if (path === '/users/generate-user') {
-    const user = generateRandomUser(); 
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(user));
+  // [Path 2] GET - Get all Users - '/users/get'
+  else if (path === '/users/get' && request.method === 'GET') {
+    SQL = 'SELECT * FROM users';
+    db.query(SQL, (error, results) => {
+      if (error) {
+        response.writeHead(500);
+        response.end('Server Error');
+        return;
+      }
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify(results));
+    });
   }
 
   // [Path 3] POST - Create a User - '/users/create'
-  else if (segments[1] === 'create' && segments.length === 2 
-  && req.method === 'POST') {
+  else if(path === '/users/create' && request.method === 'POST') {
     let body = '';
-    req.on('data', chunk => {
+    request.on('data', chunk => {
       body += chunk.toString(); // convert Buffer to string
     });
-    req.on('end', () => {
+    request.on('end', () => {
       const user = JSON.parse(body);
       const { title, titleOther, firstName, surName, mobile, email } = user;
 
       const validTitles = ['Mx', 'Ms', 'Mr', 'Mrs', 'Miss', 'Dr', 'Other'];
       if (!validTitles.includes(title)) {
-        res.writeHead(400);
-        res.end('Invalid title. Must be one of Mx, Ms, Mr, Mrs, Miss, Dr, Other.');
+        response.writeHead(400);
+        response.end('Invalid title. Must be one of Mx, Ms, Mr, Mrs, Miss, Dr, Other.');
         return;
       }
 
       if (title === 'Other' && !titleOther) {
-        res.writeHead(400);
-        res.end('titleOther is required when title is Other.');
+        response.writeHead(400);
+        response.end('titleOther is required when title is Other.');
         return;
       }
 
       if (!firstName || !surName || !mobile || !email) {
-        res.writeHead(400);
-        res.end('Missing required fields');
+        response.writeHead(400);
+        response.end('Missing required fields');
         return;
       }
 
       SQL = 'INSERT INTO users SET ?';
-      db.query(SQL, user, (err, result) => {
-        if (err) {
-          res.writeHead(500);
-          res.end('Server Error');
+      db.query(SQL, user, (error, result) => {
+        if (error) {
+          response.writeHead(500);
+          response.end('Server Error');
           return;
         }
-        res.writeHead(201);
-        res.end(`User added with ID: ${result.insertId}`);
+        response.writeHead(201);
+        response.end(`User added with ID: ${result.insertId}`);
       });
     }); 
 
-  // [Path 4] GET - Read a User - '/users/get/:userId'
-  } else if (segments[1] === 'get' && segments.length === 3 
-  && req.method === 'GET') {
-    const userId = segments[2];
-    SQL = 'SELECT * FROM users WHERE userId = ?';
-    db.query(SQL, [userId], (err, result) => {
-      if (err) {
-        res.writeHead(500);
-        res.end('Server Error');
+  // [Path 4] GET - Read a User - '/users/get/:userID'
+  } else if (path.startsWith('/users/get/') && request.method === 'GET') {
+    const userID = segments[2];
+    SQL = 'SELECT * FROM users WHERE userID = ?';
+    db.query(SQL, [userID], (error, result) => {
+      if (error) {
+        response.writeHead(500);
+        response.end('Server Error');
         return;
       }
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result));
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify(result));
     });
   }
 
-  // [Path 5] PUT - Update a User - '/users/update/:userId'
-  else if (segments[1] === 'update' && segments.length === 3
-  && req.method === 'PUT') {
+  // [Path 5] PUT - Update a User - '/users/update/:userID'
+  else if (path.startsWith('/users/update/') && request.method === 'PUT') {
     let body = '';
-    const userId = segments[2];
-    req.on('data', chunk => {
+    const userID = segments[2];
+    request.on('data', chunk => {
       body += chunk.toString();
     });
-    req.on('end', () => {
+    request.on('end', () => {
       const user = JSON.parse(body);
       const { title, titleOther, firstName, surName, mobile, email } = user;
 
       // Add your validation and update logic here
-      SQL = 'UPDATE users SET title = ?, titleOther = ?, firstName = ?, surName = ?, mobile = ?, email = ? WHERE userId = ?';
-      db.query(SQL, [title, titleOther, firstName, surName, mobile, email, userId], (err, result) => {
-        if (err) {
-          res.writeHead(500);
-          res.end('Server Error');
+      SQL = 'UPDATE users SET title = ?, titleOther = ?, firstName = ?, surName = ?, mobile = ?, email = ? WHERE userID = ?';
+      db.query(SQL, [title, titleOther, firstName, surName, mobile, email, userID], (error, result) => {
+        if (error) {
+          response.writeHead(500);
+          response.end('Server Error');
           return;
         }
-        res.writeHead(200);
-        res.end(`User with ID: ${userId} updated.`);
+        response.writeHead(200);
+        response.end(`User with ID: ${userID} updated.`);
       });
     });
   }
 
-  // [Path 6] DELETE - Delete a User - '/users/delete/:userId'
-  else if (segments[1] === 'delete' && segments.length === 3 
-  && req.method === 'DELETE') {
-    const userId = segments[2];
-    SQL = 'DELETE FROM users WHERE userId = ?';
-    db.query(SQL, [userId], (err, result) => {
-      if (err) {
-        res.writeHead(500);
-        res.end('Server Error');
+  // [Path 6] DELETE - Delete a User - '/users/delete/:userID'
+  else if (path.startsWith('/users/delete/') && request.method === 'DELETE') {
+    const userID = segments[2];
+    SQL = 'DELETE FROM users WHERE userID = ?';
+    db.query(SQL, [userID], (error, result) => {
+      if (error) {
+        response.writeHead(500);
+        response.end('Server Error');
         return;
       }
-      res.writeHead(200);
-      res.end(`User with ID: ${userId} deleted.`);
+      response.writeHead(200);
+      response.end(`User with ID: ${userID} deleted.`);
     });
   }
 
-  // [Path 7] GET - Read all addresses for a specific user - '/users/:userId/addresses'
-  else if (segments[0] === 'users' && segments[2] === 'addresses' 
-  && segments.length === 3 && req.method === 'GET') {
-    const userId = segments[1]; // Extract userId from the path
-    const SQL = 'SELECT * FROM addresses WHERE userId = ?';
-    db.query(SQL, [userId], (err, results) => {
-      if (err) {
-        res.writeHead(500);
-        res.end('Server Error');
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(results));
-    });
-  }
-
-  // [Path 8] GET - Read all Addresses - '/addresses/get/generate-address'
-  else if (path === '/addresses/generate-address') {
+  // [Path 7] GET - Generate Random Address - '/users/addresses/generate-address'
+  else if (path === '/users/addresses/generate-address') {
     const address = generateRandomAddress(); 
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(address));
+    response.writeHead(200, { 'Content-Type': 'application/json' });
+    response.end(JSON.stringify(address));
   }
 
-  // [Path 9] POST - Create an address for a specific user - '/users/:userId/addresses/create'
-  else if (segments[0] === 'users' && segments[2] === 'addresses' && segments[3] === 'create' 
-  && segments.length === 4 && req.method === 'POST') {
-    let body = '';
-    const userId = segments[1]; // Extract userId from the path
+  // [Path 8] GET - Get all addresses for a specific user - '/users/addresses/get/:userID/:addressType'  
+  else if (path.startsWith('/users/addresses/get/') && request.method === 'GET') {
+    const userID = segments[3]; // Extract userID from the path
+    const addressType = segments[4]; // Extract userID from the path
+    const SQL = 'SELECT * FROM addresses WHERE userID = ? and addressType = ?';
+    db.query(SQL, [userID, addressType], (error, results) => {
+      if (error) {
+        response.writeHead(500);
+        response.end('Server Error');
+        return;
+      }
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify(results));
+    });
+  }
 
-    req.on('data', chunk => {
+  // [Path 9] POST - Create an address for a specific user - '/users/addresses/create/:userID'
+  else if (path.startsWith('/users/addresses/create') && request.method === 'POST') {
+    let body = '';
+    const userID = segments[3]; // Extract userID from the path
+
+    request.on('data', chunk => {
       body += chunk.toString(); // Convert Buffer to string
     });
 
-    req.on('end', () => {
+    request.on('end', () => {
       const { addressType, addressLine1, addressLine2, town, countyCity, eircode } = JSON.parse(body);
 
       if (!addressType || !addressLine1 || !town || !countyCity) {
-        res.writeHead(400);
-        res.end('Missing required fields');
+        response.writeHead(400);
+        response.end('Missing required fields');
         return;
       }
 
-      const address = { userId, addressType, addressLine1, addressLine2, town, countyCity, eircode };
+      const address = { userID, addressType, addressLine1, addressLine2, town, countyCity, eircode };
       const SQL = 'INSERT INTO addresses SET ?';
       
-      db.query(SQL, address, (err, result) => {
-        if (err) {
-          console.error(err);
-          res.writeHead(500);
-          res.end('Internal Server Error');
+      db.query(SQL, address, (error, result) => {
+        if (error) {
+          response.writeHead(500);
+          response.end('Internal Server Error');
           return;
         }
-        res.writeHead(201);
-        res.end(`Address added with ID: ${result.insertId}`);
+        response.writeHead(201);
+        response.end(`Address added with ID: ${result.insertId}`);
       });
     });
   }
 
-  // [Path 10] GET - Read a specific address for a specific user - '/users/:userId/addresses/:addressId'
-  else if (segments[0] === 'users' && segments[2] === 'addresses' 
-  && segments.length === 4 && req.method === 'GET') {
-    const userId = segments[1]; // Extract userId from the path
-    const addressId = segments[3]; // Extract addressId from the path
-    const SQL = 'SELECT * FROM addresses WHERE userId = ? AND addressId = ?';
+  // [Path 10] GET - Get a specific address for a specific user - '/users/addresses/getone/:userID/:addressID'  
+  else if (path.startsWith('/users/addresses/getone/') && request.method === 'GET') {
+    const userID = segments[3]; // Extract userID from the path
+    const addressID = segments[4]; // Extract addressID from the path
+    const SQL = 'SELECT * FROM addresses WHERE userID = ? AND addressID = ?';
 
-    db.query(SQL, [userId, addressId], (err, result) => {
-      if (err) {
-        console.error(err);
-        res.writeHead(500);
-        res.end('Internal Server Error');
+    db.query(SQL, [userID, addressID], (error, result) => {
+      if (error) {
+        response.writeHead(500);
+        response.end('Internal Server Error');
         return;
       }
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result));
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify(result));
     });
   }
 
-  // [Path 11] PUT - Update a specific address for a specific user - '/users/:userId/addresses/:addressId/update'
-  else if (segments[0] === 'users' && segments[2] === 'addresses' && segments[4] === 'update' 
-  && segments.length === 5 && req.method === 'PUT') {
+  // [Path 11] PUT - Update a specific address for a specific user - '/users/addresses/update/:userID/:addressID'
+  else if (path.startsWith('/users/addresses/update/') && request.method === 'PUT') {
     let body = '';
-    const userId = segments[1]; // Extract userId from the path
-    const addressId = segments[3]; // Extract addressId from the path
+    const userID = segments[3]; // Extract userID from the path
+    const addressID = segments[4]; // Extract addressID from the path
 
-    req.on('data', chunk => {
+    request.on('data', chunk => {
       body += chunk.toString(); // Convert Buffer to string
     });
 
-    req.on('end', () => {
+    request.on('end', () => {
       const { addressType, addressLine1, addressLine2, town, countyCity, eircode } = JSON.parse(body);
       
-      const SQL = `UPDATE addresses SET addressType = ?, addressLine1 = ?, addressLine2 = ?, town = ?, countyCity = ?, eircode = ? WHERE userId = ? AND addressId = ?`;
+      const SQL = `UPDATE addresses SET addressType = ?, addressLine1 = ?, addressLine2 = ?, town = ?, countyCity = ?, eircode = ? WHERE userID = ? AND addressID = ?`;
 
-      db.query(SQL, [addressType, addressLine1, addressLine2, town, countyCity, eircode, userId, addressId], (err, result) => {
-        if (err) {
-          console.error(err);
-          res.writeHead(500);
-          res.end('Internal Server Error');
+      db.query(SQL, [addressType, addressLine1, addressLine2, town, countyCity, eircode, userID, addressID], (error, result) => {
+        if (error) {
+          response.writeHead(500);
+          response.end('Internal Server Error');
           return;
         }
-        res.writeHead(200);
-        res.end(`Address with ID: ${addressId} updated.`);
+        response.writeHead(200);
+        response.end(`Address with ID: ${addressID} updated.`);
       });
     });
   }
 
-  // [Path 12] DELETE - Delete a specific address for a specific user - '/users/:userId/addresses/delete/:addressId'
-  else  if (segments[0] === 'users' && segments[2] === 'addresses' && segments[3] === 'delete' 
-  && segments.length === 5 && req.method === 'DELETE') {
-    const userId = segments[1]; // Extract userId from the path
-    const addressId = segments[4]; // Extract addressId from the path
-    const SQL = 'DELETE FROM addresses WHERE userId = ? AND addressId = ?';
+  // [Path 12] DELETE - Delete a specific address for a specific user - '/users/addresses/delete/:userID/:addressID'
+  else  if (path.startsWith('/users/addresses/delete/') && request.method === 'DELETE') {
+    const userID = segments[3]; // Extract userID from the path
+    const addressID = segments[4]; // Extract addressID from the path
+    const SQL = 'DELETE FROM addresses WHERE userID = ? AND addressID = ?';
 
-    db.query(SQL, [userId, addressId], (err, result) => {
-      if (err) {
-        console.error(err);
-        res.writeHead(500);
-        res.end('Internal Server Error');
+    db.query(SQL, [userID, addressID], (error, result) => {
+      if (error) {
+        response.writeHead(500);
+        response.end('Internal Server Error');
         return;
       }
-      res.writeHead(200);
-      res.end(`Address with ID: ${addressId} deleted.`);
+      response.writeHead(200);
+      response.end(`Address with ID: ${addressID} deleted.`);
     });
   }
 
   // [Path 13] Path Not Found
   else {
-    res.writeHead(404);
-    res.end('Not Found');
+    response.writeHead(404);
+    response.end('Not Found');
   }
 }); // end of http.createServer
 
