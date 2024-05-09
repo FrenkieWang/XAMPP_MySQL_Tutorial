@@ -56,7 +56,35 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // [Path 2] POST - Create a User - 'http://localhost:5000/users/create'
+    // [Path 2 -- Create] -- Generate Random User - 'http://localhost:5000/users/generate-user'
+    document.getElementById('generateRandomUser').addEventListener('click', (event) => {  
+        event.preventDefault(); 
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', `http://localhost:5000/users/generate-user`, true);
+        xhr.send();       
+        xhr.onerror = function() {
+            console.error('Network error');
+        };
+
+        xhr.onload = function() {
+            if (this.status >= 200 && this.status < 300) {
+                const userData = JSON.parse(this.responseText);
+                console.log("Generate a User", userData); 
+            
+                // Fill the <form> with fetched User
+                let userForm = document.getElementById('userForm');
+                Object.keys(userData).forEach(key => {
+                    userForm.elements[key].value = userData[key];                       
+                });
+                toggleTitleOther(userData.title);                 
+            } else {
+                console.error(this.statusText);
+            }
+        };
+    });
+
+    // [Path 3] POST - Create a User - 'http://localhost:5000/users/create'
     document.getElementById('createUserButton').addEventListener('click', (event) => {
         event.preventDefault(); 
 
@@ -84,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }; 
     });  
 
-    // [Path 3] GET - Get a User - 'http://localhost:5000/users/get/:userId'
+    // [Path 4] GET - Get a User - 'http://localhost:5000/users/get/:userId'
     window.editUser = function(userId) {       
         currentEditingUserId = userId;  // Change current Editing UserId   
         document.getElementById('editingUser').innerText = `Editing User: ${userId}`;
@@ -123,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     };
 
-    // [Path 4] PUT - Update a User - 'http://localhost:5000/users/update/:userId'
+    // [Path 5] PUT - Update a User - 'http://localhost:5000/users/update/:userId'
     document.getElementById('editUserButton').addEventListener('click', (event) => {
         event.preventDefault();
 
@@ -156,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
-    // [Path 5] DELETE - Delete a User - 'http://localhost:5000/users/delete/:userId'
+    // [Path 6] DELETE - Delete a User - 'http://localhost:5000/users/delete/:userId'
     window.deleteUser = function(userId) {
         let xhr = new XMLHttpRequest();
         xhr.open('DELETE', `http://localhost:5000/users/delete/${userId}`, true);   
@@ -188,9 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentEditingUserId = userId;
         document.getElementById('userAddressTitle').innerText = `CRUD for User(${userId})'s Address`;
         refreshAddresses();  // Refresh Addresses in userId 
-    }
+    }    
 
-    // [Path 6] GET - Read all addresses for a specific user - 'http://localhost:5000/users/:userId/addresses'
+    // [Path 7] GET - Read all addresses for a specific user - 'http://localhost:5000/users/:userId/addresses'
     function refreshAddresses() {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', `http://localhost:5000/users/${currentEditingUserId}/addresses`, true);
@@ -228,7 +256,46 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }    
 
-    // [Path 7] POST - Create an address for a specific user - 'http://localhost:5000/users/:userId/addresses/create'
+    // [Path 8 -- Create] -- Generate Random User - 'http://localhost:5000/addresses/generate-address'
+    document.getElementById('generateRandomAddress').addEventListener('click', (event) => {  
+        event.preventDefault(); 
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', `http://localhost:5000/addresses/generate-address`, true);
+        xhr.send();       
+        xhr.onerror = function() {
+            console.error('Network error');
+        };
+
+        xhr.onload = function() {
+            if (this.status >= 200 && this.status < 300) {
+                const addressData = JSON.parse(this.responseText);
+                console.log("Generate a Address", addressData);         
+                
+                // Fill the <form> with fetched Address
+                let addressForm = document.getElementById('addressForm');                 
+                Object.keys(addressData).forEach(key => {
+                    const element = addressForm.elements[key];  
+
+                    if(element instanceof NodeList){
+                        if (element[0]?.type === 'radio'){
+                            const radioValue = addressData[key];
+                            document.querySelectorAll(`input[name="${key}"]`).forEach(radio => {
+                                radio.checked = (radioValue === radio.value);
+                            });
+                        }                                                 
+                    } 
+                    else {
+                        element.value = addressData[key];
+                    }     
+                });
+            } else {
+                console.error(this.statusText);
+            }
+        };
+    });
+
+    // [Path 9] POST - Create an address for a specific user - 'http://localhost:5000/users/:userId/addresses/create'
     document.getElementById('createAddressButton').addEventListener('click', (event) => {
         event.preventDefault();  
     
@@ -257,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };  
     });
 
-    // [Path 8] GET - Read a specific address for a specific user - 'http://localhost:5000/users/:userId/addresses/:addressId'
+    // [Path 10] GET - Read a specific address for a specific user - 'http://localhost:5000/users/:userId/addresses/:addressId'
     window.editAddress = function (userId, addressId) {
         // Change current Editing UserId and addressId, render them in Page
         currentEditingUserId = userId;  
@@ -285,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // delete addressData._id; 
                 // delete addressData.__v;  
 
-                // Fill the <form> with fetched Enrollment
+                // Fill the <form> with fetched Address
                 let addressForm = document.getElementById('addressForm');                 
                 Object.keys(addressData).forEach(key => {
                     const element = addressForm.elements[key];  
@@ -312,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // [Path 9] PUT - Update a specific address for a specific user - 'http://localhost:5000/users/:userId/addresses/:addressId/update'
+    // [Path 11] PUT - Update a specific address for a specific user - 'http://localhost:5000/users/:userId/addresses/:addressId/update'
     document.getElementById('editAddressButton').addEventListener('click',  (event) => {
         event.preventDefault();
 
@@ -345,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };      
     });    
 
-    // [Path 10] DELETE - Delete a specific address for a specific user - '/users/:userId/addresses/delete/:addressId'   
+    // [Path 12] DELETE - Delete a specific address for a specific user - '/users/:userId/addresses/delete/:addressId'   
     window.deleteAddress = function(userId, addressId) {
         let xhr = new XMLHttpRequest();
         xhr.open('DELETE', `http://localhost:5000/users/${userId}/addresses/delete/${addressId}`, true);
@@ -375,8 +442,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('editUserButton').disabled = true;
         document.getElementById('createUserButton').disabled = false;
          
-        currentEditingUserId = null; // clear editing userId  
-        currentEditingAddressId = null; // clear editing addressId  
+        // Clear editing userId and addressId
+        currentEditingUserId = null; 
+        currentEditingAddressId = null; 
+        document.getElementById('editingUser').innerText = `Editing User: None`;
+        document.getElementById('editingAddress').innerText = `Editing Address: None`;
+
         refreshUsers(); // Refresh Users when browser loaded   
     });
 });

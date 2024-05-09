@@ -2,6 +2,9 @@ const http = require('http');
 const mysql = require('mysql');
 const url = require('url');
 
+const generateRandomUser = require('./faker/fakerUser'); 
+const generateRandomAddress = require('./faker/fakerAddress'); 
+
 // Configure Database
 const db = mysql.createConnection({
   host: 'localhost',
@@ -49,7 +52,14 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // [Path 2] POST - Create a User - '/users/create'
+  // [Path 2] GET - Read all Users - '/users/get/generate-user'
+  else if (path === '/users/generate-user') {
+    const user = generateRandomUser(); 
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(user));
+  }
+
+  // [Path 3] POST - Create a User - '/users/create'
   else if (segments[1] === 'create' && segments.length === 2 
   && req.method === 'POST') {
     let body = '';
@@ -91,7 +101,7 @@ const server = http.createServer((req, res) => {
       });
     }); 
 
-  // [Path 3] GET - Read a User - '/users/get/:userId'
+  // [Path 4] GET - Read a User - '/users/get/:userId'
   } else if (segments[1] === 'get' && segments.length === 3 
   && req.method === 'GET') {
     const userId = segments[2];
@@ -107,7 +117,7 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // [Path 4] PUT - Update a User - '/users/update/:userId'
+  // [Path 5] PUT - Update a User - '/users/update/:userId'
   else if (segments[1] === 'update' && segments.length === 3
   && req.method === 'PUT') {
     let body = '';
@@ -133,7 +143,7 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // [Path 5] DELETE - Delete a User - '/users/delete/:userId'
+  // [Path 6] DELETE - Delete a User - '/users/delete/:userId'
   else if (segments[1] === 'delete' && segments.length === 3 
   && req.method === 'DELETE') {
     const userId = segments[2];
@@ -149,7 +159,7 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // [Path 6] GET - Read all addresses for a specific user - '/users/:userId/addresses'
+  // [Path 7] GET - Read all addresses for a specific user - '/users/:userId/addresses'
   else if (segments[0] === 'users' && segments[2] === 'addresses' 
   && segments.length === 3 && req.method === 'GET') {
     const userId = segments[1]; // Extract userId from the path
@@ -165,7 +175,14 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // [Path 7] POST - Create an address for a specific user - '/users/:userId/addresses/create'
+  // [Path 8] GET - Read all Addresses - '/addresses/get/generate-address'
+  else if (path === '/addresses/generate-address') {
+    const address = generateRandomAddress(); 
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(address));
+  }
+
+  // [Path 9] POST - Create an address for a specific user - '/users/:userId/addresses/create'
   else if (segments[0] === 'users' && segments[2] === 'addresses' && segments[3] === 'create' 
   && segments.length === 4 && req.method === 'POST') {
     let body = '';
@@ -200,7 +217,7 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // [Path 8] GET - Read a specific address for a specific user - '/users/:userId/addresses/:addressId'
+  // [Path 10] GET - Read a specific address for a specific user - '/users/:userId/addresses/:addressId'
   else if (segments[0] === 'users' && segments[2] === 'addresses' 
   && segments.length === 4 && req.method === 'GET') {
     const userId = segments[1]; // Extract userId from the path
@@ -219,7 +236,7 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // [Path 9] PUT - Update a specific address for a specific user - '/users/:userId/addresses/:addressId/update'
+  // [Path 11] PUT - Update a specific address for a specific user - '/users/:userId/addresses/:addressId/update'
   else if (segments[0] === 'users' && segments[2] === 'addresses' && segments[4] === 'update' 
   && segments.length === 5 && req.method === 'PUT') {
     let body = '';
@@ -248,7 +265,7 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // [Path 10] DELETE - Delete a specific address for a specific user - '/users/:userId/addresses/delete/:addressId'
+  // [Path 12] DELETE - Delete a specific address for a specific user - '/users/:userId/addresses/delete/:addressId'
   else  if (segments[0] === 'users' && segments[2] === 'addresses' && segments[3] === 'delete' 
   && segments.length === 5 && req.method === 'DELETE') {
     const userId = segments[1]; // Extract userId from the path
@@ -267,7 +284,7 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // [Path 11] Path Not Found
+  // [Path 13] Path Not Found
   else {
     res.writeHead(404);
     res.end('Not Found');
